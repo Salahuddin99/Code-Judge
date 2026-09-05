@@ -1,0 +1,144 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: #0f0f0f;
+  color: #e4e4e4;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 20px;
+}
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 24px;
+}
+
+.challenge-header {
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.challenge-header h2 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+}
+
+.challenge-header p {
+  margin: 0;
+  color: #aaa;
+  line-height: 1.5;
+}
+
+.code-editor {
+  width: 100%;
+  min-height: 260px;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  resize: vertical;
+}
+
+.code-editor:focus {
+  outline: none;
+  border-color: #555;
+}
+
+.button-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background-color: #333;
+  color: #fff;
+}
+
+button:hover:not(:disabled) {
+  background-color: #444;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.submit-btn {
+  background-color: #2563eb;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+.error-banner {
+  background-color: #3a1a1a;
+  border: 1px solid #5a2a2a;
+  color: #ff8a8a;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.results-panel {
+  margin-top: 20px;
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 16px 20px;
+}
+
+.results-panel h3 {
+  margin-top: 0;
+}
+
+.result-row {
+  padding: 8px 0;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.result-row:last-child {
+  border-bottom: none;
+}
+
+.result-row.pass .status {
+  color: #4ade80;
+}
+
+.result-row.fail .status {
+  color: #f87171;
+}
+
+.detail {
+  color: #999;
+  margin-left: 12px;
+  font-size: 13px;
+}
+
+.error-text {
+  color: #f87171;
+  font-family: monospace;
+  font-size: 13px;
+  margin-top: 4px;
+}

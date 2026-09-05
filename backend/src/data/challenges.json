@@ -1,0 +1,15 @@
+[
+  {
+    "id": "off-by-one-1",
+    "title": "Off-By-One in Array Sum",
+    "description": "This function is supposed to sum all the numbers in an array, but it returns the wrong total. Find and fix the bug. Your code should read the array from the input (JSON format) and print the sum.",
+    "language": "javascript",
+    "starterCode": "const input = JSON.parse(require('fs').readFileSync(0, 'utf-8'));\n\nfunction sumArray(arr) {\n  let total = 0;\n  for (let i = 0; i < arr.length - 1; i++) {\n    total += arr[i];\n  }\n  return total;\n}\n\nconsole.log(sumArray(input));",
+    "testCases": [
+      { "input": "[1,2,3]", "expectedOutput": "6", "hidden": false },
+      { "input": "[5,5,5,5]", "expectedOutput": "20", "hidden": false },
+      { "input": "[]", "expectedOutput": "0", "hidden": true },
+      { "input": "[-1,1]", "expectedOutput": "0", "hidden": true }
+    ]
+  }
+]
