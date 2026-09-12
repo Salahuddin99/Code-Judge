@@ -1,8 +1,11 @@
 import { Request, Response } from 'express'
+import { Challenge } from '../models/Challenge'
+import { Submission } from '../models/Submission'
 import { runAllTests } from '../services/testRunnerService'
-import challenges from '../data/challenges.json'
 
+// POST /api/submit/:id
 export async function submitCode(req: Request, res: Response) {
+  const { id } = req.params
   const { code } = req.body
 
   if (!code || typeof code !== 'string') {
@@ -10,7 +13,8 @@ export async function submitCode(req: Request, res: Response) {
   }
 
   try {
-    const challenge = challenges[0]
+    const challenge = await Challenge.findById(id)
+
     if (!challenge) {
       return res.status(404).json({ error: 'Challenge not found' })
     }
@@ -23,6 +27,15 @@ export async function submitCode(req: Request, res: Response) {
       passed: r.passed,
       hidden: challenge.testCases[index]?.hidden ?? false,
     }))
+
+    // Save this attempt permanently, linked to the challenge —
+    // this is what lets the creator see every candidate's submission later
+    await Submission.create({
+      challengeId: challenge._id,
+      code,
+      allPassed,
+      results: sanitizedResults,
+    })
 
     res.json({ allPassed, results: sanitizedResults })
   } catch (error: any) {

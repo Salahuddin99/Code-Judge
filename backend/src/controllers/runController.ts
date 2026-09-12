@@ -1,8 +1,10 @@
 import { Request, Response } from 'express'
+import { Challenge } from '../models/Challenge'
 import { runVisibleTests } from '../services/testRunnerService'
-import challenges from '../data/challenges.json'
 
+// POST /api/run/:id
 export async function runCode(req: Request, res: Response) {
+  const { id } = req.params
   const { code } = req.body
 
   if (!code || typeof code !== 'string') {
@@ -10,14 +12,11 @@ export async function runCode(req: Request, res: Response) {
   }
 
   try {
-    // For now, always use the first (and only) challenge.
-    // Once you have multiple challenges, this would use a challenge ID from the request.
-    const challenge = challenges[0]
+    const challenge = await Challenge.findById(id)
 
     if (!challenge) {
-      //
-      return res.status(404).json({ error: 'Challenge not found' }) //added by ai chat not claude
-    } //
+      return res.status(404).json({ error: 'Challenge not found' })
+    }
 
     const results = await runVisibleTests(code, challenge.testCases)
 

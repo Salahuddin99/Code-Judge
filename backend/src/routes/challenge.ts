@@ -1,8 +1,14 @@
 import { Router } from 'express'
-import { getChallenge } from '../controllers/challengeController'
+import {
+  createChallenge,
+  getChallenge,
+} from '../controllers/challengeController'
+import { getSubmissions } from '../controllers/submissionController'
 
 const router = Router()
 
-router.get('/', getChallenge)
+router.post('/', createChallenge)
+router.get('/:id', getChallenge)
+router.get('/:id/submissions', getSubmissions)
 
 export default router

@@ -3,6 +3,6 @@ import { runCode } from '../controllers/runController'
 
 const router = Router()
 
-router.post('/', runCode)
+router.post('/:id', runCode)
 
 export default router
