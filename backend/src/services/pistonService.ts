@@ -25,13 +25,17 @@ export async function executeCode({
   input,
 }: ExecuteRequest): Promise<ExecuteResult> {
   try {
+    // Automatically give the candidate's code access to a plain `input` variable,
+    // so they never need to know about stdin/readFileSync themselves.
+    const wrappedCode = `const input = require('fs').readFileSync(0, 'utf-8').trim();\n${code}`
+
     const response = await axios.post(PISTON_URL, {
       language: 'javascript',
       version: '20.11.1',
       files: [
         {
           name: 'main.js',
-          content: code,
+          content: wrappedCode,
         },
       ],
       stdin: input ?? '',
@@ -40,9 +44,9 @@ export async function executeCode({
     const run = response.data.run
 
     return {
-      stdout: run.stdout ?? '',
-      stderr: run.stderr ?? '',
-      exitCode: run.code ?? 1,
+      stdout: response.data.run.stdout,
+      stderr: response.data.run.stderr,
+      exitCode: response.data.run.code,
     }
   } catch (error: any) {
     // Piston itself failed to respond (container down, network issue, etc.)

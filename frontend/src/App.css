@@ -142,3 +142,61 @@ button:disabled {
   font-size: 13px;
   margin-top: 4px;
 }
+.editor-wrapper {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #333;
+}
+
+.editor-wrapper .cm-editor {
+  font-family: 'Fira Code', 'Courier New', monospace;
+  font-size: 14px;
+}
+
+.editor-wrapper .cm-gutters {
+  background-color: #1e1e1e;
+  border-right: 1px solid #333;
+}
+
+label {
+  display: block;
+  margin-top: 16px;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #ccc;
+}
+
+input[type='text'] {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 16px;
+  background-color: #1a1a1a;
+  color: #e4e4e4;
+  border: 1px solid #333;
+  border-radius: 6px;
+}
+
+input[type='text']:focus {
+  outline: none;
+  border-color: #555;
+}
+
+.text-input {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px 14px;
+  font-size: 15px;
+  line-height: 1.5;
+  background-color: #1a1a1a;
+  color: #e4e4e4;
+  border: 1px solid #333;
+  border-radius: 6px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.text-input:focus {
+  outline: none;
+  border-color: #555;
+}
