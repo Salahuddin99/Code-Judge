@@ -19,7 +19,11 @@ export async function submitCode(req: Request, res: Response) {
       return res.status(404).json({ error: 'Challenge not found' })
     }
 
-    const results = await runAllTests(code, challenge.testCases)
+    const results = await runAllTests(
+      code,
+      challenge.testCases,
+      challenge.language,
+    )
     const allPassed = results.every((r) => r.passed)
 
     const sanitizedResults = results.map((r, index) => ({
@@ -28,8 +32,6 @@ export async function submitCode(req: Request, res: Response) {
       hidden: challenge.testCases[index]?.hidden ?? false,
     }))
 
-    // Save this attempt permanently, linked to the challenge —
-    // this is what lets the creator see every candidate's submission later
     await Submission.create({
       challengeId: challenge._id,
       code,

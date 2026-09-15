@@ -18,7 +18,14 @@ export async function runCode(req: Request, res: Response) {
       return res.status(404).json({ error: 'Challenge not found' })
     }
 
-    const results = await runVisibleTests(code, challenge.testCases)
+    // challenge.language comes straight from what the creator picked when
+    // building this challenge — it determines which Piston runtime runs
+    // the candidate's code and which stdin boilerplate gets injected.
+    const results = await runVisibleTests(
+      code,
+      challenge.testCases,
+      challenge.language,
+    )
 
     res.json({ results })
   } catch (error: any) {

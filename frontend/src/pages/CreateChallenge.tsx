@@ -1,9 +1,39 @@
-import CodeMirror from '@uiw/react-codemirror'
-import { javascript } from '@codemirror/lang-javascript'
-import { oneDark } from '@codemirror/theme-one-dark'
 import { useState } from 'react'
+import CodeMirror from '@uiw/react-codemirror'
+import { langs } from '@uiw/codemirror-extensions-langs'
+import { oneDark } from '@codemirror/theme-one-dark'
 import { createChallenge } from '../api'
 import type { TestCaseInput } from '../api'
+
+// Same mapping as SolveChallenge — kept in sync so a challenge's starter
+// code always highlights the same way for both creator and candidate.
+function getLanguageExtension(language: string) {
+  switch (language) {
+    case 'python':
+      return langs.python()
+    case 'c++':
+      return langs.cpp()
+    case 'c#':
+      return langs.cs()
+    case 'javascript':
+    default:
+      return langs.js()
+  }
+}
+
+function getStarterTemplate(language: string) {
+  switch (language) {
+    case 'python':
+      return ''
+    case 'c++':
+      return 'int main() {\n    \n    return 0;\n}\n'
+    case 'c#':
+      return 'class Program {\n    static void Main() {\n        \n    }\n}\n'
+    case 'javascript':
+    default:
+      return ''
+  }
+}
 
 function CreateChallenge() {
   const [title, setTitle] = useState('')
@@ -99,10 +129,22 @@ function CreateChallenge() {
         />
 
         <label>Language</label>
-        <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+        <select
+          value={language}
+          onChange={(e) => {
+            const newLanguage = e.target.value
+            setLanguage(newLanguage)
+            // Only auto-fill if the starter code is still empty, so we don't
+            // overwrite something the creator already started typing.
+            if (starterCode.trim() === '') {
+              setStarterCode(getStarterTemplate(newLanguage))
+            }
+          }}
+        >
           <option value="javascript">JavaScript</option>
           <option value="python">Python</option>
           <option value="c++">C++</option>
+          <option value="c#">C#</option>
         </select>
 
         <label>Starter Code (with the bug included)</label>
@@ -111,7 +153,7 @@ function CreateChallenge() {
             value={starterCode}
             height="240px"
             theme={oneDark}
-            extensions={[javascript()]}
+            extensions={[getLanguageExtension(language)]}
             onChange={(value) => setStarterCode(value)}
             basicSetup={{
               tabSize: 2,

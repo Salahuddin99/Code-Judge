@@ -1,10 +1,27 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import CodeMirror from '@uiw/react-codemirror'
-import { javascript } from '@codemirror/lang-javascript'
+import { langs } from '@uiw/codemirror-extensions-langs'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { fetchChallenge, runCode, submitCode } from '../api'
 import type { Challenge, RunResult, SubmitResult } from '../api'
+
+// Maps the language string stored in MongoDB to the matching CodeMirror
+// syntax-highlighting extension. Centralized here so both this page and
+// the create page can share the exact same mapping.
+function getLanguageExtension(language: string) {
+  switch (language) {
+    case 'python':
+      return langs.python()
+    case 'c++':
+      return langs.cpp()
+    case 'c#':
+      return langs.cs()
+    case 'javascript':
+    default:
+      return langs.js()
+  }
+}
 
 function SolveChallenge() {
   const { id } = useParams<{ id: string }>()
@@ -76,16 +93,18 @@ function SolveChallenge() {
             <p>{challenge.description}</p>
           </div>
 
-          <CodeMirror
-            value={code}
-            height="320px"
-            theme={oneDark}
-            extensions={[javascript()]}
-            onChange={(value) => setCode(value)}
-            basicSetup={{
-              tabSize: 2,
-            }}
-          />
+          <div className="editor-wrapper">
+            <CodeMirror
+              value={code}
+              height="320px"
+              theme={oneDark}
+              extensions={[getLanguageExtension(challenge.language)]}
+              onChange={(value) => setCode(value)}
+              basicSetup={{
+                tabSize: 2,
+              }}
+            />
+          </div>
 
           <div className="button-row">
             <button onClick={handleRun} disabled={loading}>
