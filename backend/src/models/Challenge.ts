@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose'
-
+import type { SupportedLanguage } from '../types/Language'
 // One test case within a challenge
 interface TestCase {
   input: string
@@ -11,7 +11,7 @@ interface TestCase {
 export interface ChallengeDocument extends Document {
   title: string
   description: string
-  language: string
+  language: SupportedLanguage
   starterCode: string
   testCases: TestCase[]
   createdAt: Date
@@ -23,20 +23,25 @@ const TestCaseSchema = new Schema<TestCase>(
     expectedOutput: { type: String, required: true },
     hidden: { type: Boolean, required: true, default: false },
   },
-  { _id: false }, // test cases don't need their own separate ID
+  { _id: false },
 )
 
 const ChallengeSchema = new Schema<ChallengeDocument>({
   title: { type: String, required: true },
   description: { type: String, required: true },
-  language: { type: String, required: true, default: 'javascript' },
+  // `enum` tells MongoDB itself to reject any language outside this list —
+  // this is enforced at the database level, not just in TypeScript.
+  language: {
+    type: String,
+    required: true,
+    enum: ['javascript', 'python', 'c++', 'c#'],
+    default: 'javascript',
+  },
   starterCode: { type: String, required: true },
   testCases: { type: [TestCaseSchema], required: true },
   createdAt: { type: Date, default: Date.now },
 })
 
-// Mongoose automatically gives every document a unique `_id` —
-// that _id is what becomes the shareable link's challenge ID.
 export const Challenge = mongoose.model<ChallengeDocument>(
   'Challenge',
   ChallengeSchema,

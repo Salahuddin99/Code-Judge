@@ -1,56 +1,105 @@
 import axios from 'axios'
+import type { SupportedLanguage } from '../types/Language'
 
-const PISTON_URL = 'http://localhost:2000/api/v2/execute'
+// Local Piston instance (or, once deployed, wherever PISTON_URL points instead)
+const PISTON_URL =
+  process.env.PISTON_URL || 'http://localhost:2000/api/v2/execute'
 
-// The shape of what we send Piston
-interface ExecuteRequest {
-  code: string
-  input?: string // stdin, if a challenge needs it later
+interface LanguageConfig {
+  pistonLanguage: string // the exact language name Piston's API expects
+  version: string // the specific runtime version installed in Pisto
+  fileName: string // Piston needs a filename with the right extension
+  inputBoilerplate: string // the line(s) prepended so candidates get a ready-to-use input
 }
 
-// The shape of what we care about from Piston's response
-interface ExecuteResult {
+// One config per supported language. Adding a new language later means
+// adding one new entry here — nothing else in this file needs to change.
+const LANGUAGE_CONFIGS: Record<SupportedLanguage, LanguageConfig> = {
+  javascript: {
+    pistonLanguage: 'javascript',
+    version: '20.11.1',
+    fileName: 'main.js',
+    // Reads stdin and makes it available as `input` — candidates never
+    // need to know this line exists.
+    inputBoilerplate: `const input = require('fs').readFileSync(0, 'utf-8').trim();\n`,
+  },
+  python: {
+    pistonLanguage: 'python',
+    version: '3.12.0',
+    fileName: 'main.py',
+    // Same idea as JS, but Python's stdin-reading syntax is different.
+    // Note the variable is `input_data`, not `input` — `input` is already
+    // a reserved built-in function name in Python, so reusing it would
+    // silently break candidates' code if they tried to call input().
+    inputBoilerplate: `import sys\ninput_data = sys.stdin.read().strip()\n`,
+  },
+  'c++': {
+    pistonLanguage: 'c++',
+    version: '10.2.0',
+    fileName: 'main.cpp',
+    // C++ can't get a fully "magic" input variable the way JS/Python can —
+    // candidates still need to read from `cin` themselves. This boilerplate
+    // only saves them from writing the common #include lines every time
+    inputBoilerplate: `#include <iostream>\n#include <string>\nusing namespace std;\n`,
+  },
+  'c#': {
+    pistonLanguage: 'csharp',
+    version: '6.12.0',
+    fileName: 'main.cs',
+    // Same limitation as C++ — candidates still call Console.ReadLine()
+    // themselves; this just saves the one common `using` line.
+    inputBoilerplate: `using System;\n`,
+  },
+}
+
+type ExecuteCodeInput = {
+  code: string
+  input?: string // the stdin value for THIS specific test case
+  language: SupportedLanguage
+}
+
+type ExecuteCodeResult = {
   stdout: string
   stderr: string
-  exitCode: number
+  exitCode: number | null
 }
 
 /**
- * Sends a piece of JavaScript code to the local Piston container for execution.
- * Piston handles sandboxing — this function never runs user code itself,
- * it only brokers the request and returns the result.
+ * Sends a piece of code to the local Piston container for sandboxed execution.
+ * This function never runs user code itself — it only brokers the request.
+ * Piston handles the actual isolation (no network access, resource limits,
+ * automatic cleanup after each run).
  */
 export async function executeCode({
   code,
   input,
-}: ExecuteRequest): Promise<ExecuteResult> {
-  try {
-    // Automatically give the candidate's code access to a plain `input` variable,
-    // so they never need to know about stdin/readFileSync themselves.
-    const wrappedCode = `const input = require('fs').readFileSync(0, 'utf-8').trim();\n${code}`
+  language,
+}: ExecuteCodeInput): Promise<ExecuteCodeResult> {
+  const config = LANGUAGE_CONFIGS[language]
 
-    const response = await axios.post(PISTON_URL, {
-      language: 'javascript',
-      version: '20.11.1',
-      files: [
-        {
-          name: 'main.js',
-          content: wrappedCode,
-        },
-      ],
-      stdin: input ?? '',
-    })
+  if (!config) {
+    // Defensive check — should never trigger if the frontend only offers
+    // the four supported languages, but fails loudly instead of silently
+    // sending a bad request to Piston if it somehow does.
+    throw new Error(`Unsupported language: ${language}`)
+  }
 
-    const run = response.data.run
+  // Prepend the language-specific boilerplate to whatever the candidate wrote.
+  // The candidate and challenge creator never see or write this line themselves.
+  const wrappedCode = `${config.inputBoilerplate}${code}`
 
-    return {
-      stdout: response.data.run.stdout,
-      stderr: response.data.run.stderr,
-      exitCode: response.data.run.code,
-    }
-  } catch (error: any) {
-    // Piston itself failed to respond (container down, network issue, etc.)
-    // This is different from the USER's code failing — that comes back as stderr, not an exception here.
-    throw new Error(`Failed to reach code execution service: ${error.message}`)
+  const response = await axios.post(PISTON_URL, {
+    language: config.pistonLanguage,
+    version: config.version,
+    files: [{ name: config.fileName, content: wrappedCode }],
+    stdin: input ?? '',
+  })
+
+  // Piston's raw response has more fields than we need — pull out just
+  // the three that matter to the rest of the app.
+  return {
+    stdout: response.data.run.stdout,
+    stderr: response.data.run.stderr,
+    exitCode: response.data.run.code,
   }
 }
