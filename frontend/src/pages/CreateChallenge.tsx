@@ -1,3 +1,6 @@
+import CodeMirror from '@uiw/react-codemirror'
+import { javascript } from '@codemirror/lang-javascript'
+import { oneDark } from '@codemirror/theme-one-dark'
 import { useState } from 'react'
 import { createChallenge } from '../api'
 import type { TestCaseInput } from '../api'
@@ -103,13 +106,18 @@ function CreateChallenge() {
         </select>
 
         <label>Starter Code (with the bug included)</label>
-        <textarea
-          className="code-editor"
-          value={starterCode}
-          onChange={(e) => setStarterCode(e.target.value)}
-          spellCheck={false}
-          required
-        />
+        <div className="editor-wrapper">
+          <CodeMirror
+            value={starterCode}
+            height="240px"
+            theme={oneDark}
+            extensions={[javascript()]}
+            onChange={(value) => setStarterCode(value)}
+            basicSetup={{
+              tabSize: 2,
+            }}
+          />
+        </div>
 
         <h3>Test Cases</h3>
         {testCases.map((tc, index) => (

@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import CodeMirror from '@uiw/react-codemirror'
+import { javascript } from '@codemirror/lang-javascript'
+import { oneDark } from '@codemirror/theme-one-dark'
 import { fetchChallenge, runCode, submitCode } from '../api'
 import type { Challenge, RunResult, SubmitResult } from '../api'
 
@@ -73,11 +76,15 @@ function SolveChallenge() {
             <p>{challenge.description}</p>
           </div>
 
-          <textarea
-            className="code-editor"
+          <CodeMirror
             value={code}
-            onChange={(e) => setCode(e.target.value)}
-            spellCheck={false}
+            height="320px"
+            theme={oneDark}
+            extensions={[javascript()]}
+            onChange={(value) => setCode(value)}
+            basicSetup={{
+              tabSize: 2,
+            }}
           />
 
           <div className="button-row">
