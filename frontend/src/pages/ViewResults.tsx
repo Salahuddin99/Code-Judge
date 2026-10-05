@@ -33,9 +33,19 @@ function ViewResults() {
     return <div className="container">Loading results...</div>
   }
 
+  const shareableLink = `${window.location.origin}/solve/${id}`
+
   return (
     <div className="container">
       <h1>Results: {challengeTitle}</h1>
+
+      <div className="results-panel">
+        <p>Shareable link for this challenge:</p>
+        <div className="link-box">{shareableLink}</div>
+        <button onClick={() => navigator.clipboard.writeText(shareableLink)}>
+          Copy Link
+        </button>
+      </div>
 
       {submissions.length === 0 && (
         <p>

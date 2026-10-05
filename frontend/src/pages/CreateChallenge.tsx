@@ -1,12 +1,12 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import CodeMirror from '@uiw/react-codemirror'
 import { langs } from '@uiw/codemirror-extensions-langs'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { createChallenge } from '../api'
 import type { TestCaseInput } from '../api'
 
-// Same mapping as SolveChallenge — kept in sync so a challenge's starter
-// code always highlights the same way for both creator and candidate.
+// Maps the language string to the matching CodeMirror syntax extension.
 function getLanguageExtension(language: string) {
   switch (language) {
     case 'python':
@@ -21,17 +21,22 @@ function getLanguageExtension(language: string) {
   }
 }
 
+// Pre-fills the starter code with the structural scaffolding a language
+// requires (e.g. C++ needs a main() function), so the creator doesn't
+// need to remember or type this boilerplate themselves.
+
 function getStarterTemplate(language: string) {
   switch (language) {
-    case 'python':
-      return ''
-    case 'c++':
-      return 'int main() {\n    \n    return 0;\n}\n'
-    case 'c#':
-      return 'class Program {\n    static void Main() {\n        \n    }\n}\n'
     case 'javascript':
+      return "const input = require('fs').readFileSync(0, 'utf-8').trim();\n\n"
+    case 'python':
+      return 'import sys\ninput_data = sys.stdin.read().strip()\n\n'
+    case 'c++':
+      return '#include <iostream>\n#include <string>\nusing namespace std;\n\nint main() {\n    \n    return 0;\n}\n'
+    case 'c#':
+      return 'using System;\n\nclass Program {\n    static void Main() {\n        \n    }\n}\n'
     default:
-      return ''
+      return "const input = require('fs').readFileSync(0, 'utf-8').trim();\n\n"
   }
 }
 
@@ -40,10 +45,12 @@ function CreateChallenge() {
   const [description, setDescription] = useState('')
   const [language, setLanguage] = useState('javascript')
   const [starterCode, setStarterCode] = useState('')
+  const [isTemplateUnedited, setIsTemplateUnedited] = useState(true)
   const [testCases, setTestCases] = useState<TestCaseInput[]>([
     { input: '', expectedOutput: '', hidden: false },
   ])
   const [shareableLink, setShareableLink] = useState<string | null>(null)
+  const [resultsLink, setResultsLink] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -83,6 +90,7 @@ function CreateChallenge() {
       })
       const fullLink = `${window.location.origin}/solve/${result.id}`
       setShareableLink(fullLink)
+      setResultsLink(`/results/${result.id}`)
     } catch (err) {
       setError('Failed to create challenge. Check that the backend is running.')
     } finally {
@@ -97,9 +105,16 @@ function CreateChallenge() {
         <div className="results-panel">
           <p>Share this link with a candidate:</p>
           <div className="link-box">{shareableLink}</div>
-          <button onClick={() => navigator.clipboard.writeText(shareableLink)}>
-            Copy Link
-          </button>
+          <div className="button-row">
+            <button
+              onClick={() => navigator.clipboard.writeText(shareableLink)}
+            >
+              Copy Link
+            </button>
+            <Link to={resultsLink!}>
+              <button className="submit-btn">View Results</button>
+            </Link>
+          </div>
         </div>
       </div>
     )
@@ -134,9 +149,10 @@ function CreateChallenge() {
           onChange={(e) => {
             const newLanguage = e.target.value
             setLanguage(newLanguage)
-            // Only auto-fill if the starter code is still empty, so we don't
-            // overwrite something the creator already started typing.
-            if (starterCode.trim() === '') {
+            // Only auto-fill if the creator hasn't actually started editing yet —
+            // this correctly handles switching languages multiple times in a row,
+            // unlike checking for an empty field (which breaks after the first fill).
+            if (isTemplateUnedited) {
               setStarterCode(getStarterTemplate(newLanguage))
             }
           }}
@@ -154,7 +170,10 @@ function CreateChallenge() {
             height="240px"
             theme={oneDark}
             extensions={[getLanguageExtension(language)]}
-            onChange={(value) => setStarterCode(value)}
+            onChange={(value) => {
+              setStarterCode(value)
+              setIsTemplateUnedited(false)
+            }}
             basicSetup={{
               tabSize: 2,
             }}
