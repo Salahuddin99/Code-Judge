@@ -200,3 +200,26 @@ input[type='text']:focus {
   outline: none;
   border-color: #555;
 }
+
+.language-badge {
+  display: inline-block;
+  background-color: #2563eb;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.link-box {
+  background-color: #0f0f0f;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-family: monospace;
+  font-size: 13px;
+  word-break: break-all;
+  margin: 10px 0 16px 0;
+}
