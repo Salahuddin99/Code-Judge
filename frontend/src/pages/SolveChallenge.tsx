@@ -7,8 +7,7 @@ import { fetchChallenge, runCode, submitCode } from '../api'
 import type { Challenge, RunResult, SubmitResult } from '../api'
 
 // Maps the language string stored in MongoDB to the matching CodeMirror
-// syntax-highlighting extension. Centralized here so both this page and
-// the create page can share the exact same mapping.
+// syntax-highlighting extension. Kept in sync with CreateChallenge.tsx.
 function getLanguageExtension(language: string) {
   switch (language) {
     case 'python':
@@ -89,6 +88,7 @@ function SolveChallenge() {
       {challenge && (
         <>
           <div className="challenge-header">
+            <div className="language-badge">{challenge.language}</div>
             <h2>{challenge.title}</h2>
             <p>{challenge.description}</p>
           </div>
